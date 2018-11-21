@@ -4,7 +4,7 @@ export default class Container extends PureComponent {
   render() {
     return (
       <Fragment>
-        <div>This is my application!</div>
+        <div>Suasive</div>
       </Fragment>
     );
   }
