@@ -3,7 +3,7 @@ import { render } from "react-dom";
 import { Router } from "react-router-dom";
 import { Provider } from "react-redux";
 
-import App from "components/App";
+import App from "components/app";
 import store, { history } from "state/store";
 
 render(

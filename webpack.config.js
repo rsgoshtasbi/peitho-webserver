@@ -10,7 +10,10 @@ module.exports = {
   resolve: {
     alias: {
       components: path.resolve(__dirname, "client/components"),
-      state: path.resolve(__dirname, "client/state")
+      pages: path.resolve(__dirname, "client/pages"),
+      state: path.resolve(__dirname, "client/state"),
+      styles: path.resolve(__dirname, "client/styles"),
+      utils: path.resolve(__dirname, "client/utils")
     }
   },
   module: {
@@ -18,6 +21,11 @@ module.exports = {
       {
         test: /.jsx?$/,
         loader: "babel-loader",
+        exclude: /node_modules/
+      },
+      {
+        test: /.css?$/,
+        loader: "css-loader",
         exclude: /node_modules/
       }
     ]
