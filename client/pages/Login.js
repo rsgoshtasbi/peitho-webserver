@@ -1,15 +1,21 @@
-import React, { PureComponent } from "react";
+import React, { PureComponent, Fragment } from "react";
 import styled from "react-emotion";
 import update from "immutability-helper";
 import axios from "axios";
-import isNil from "lodash/isNil";
+import isEmpty from "lodash/isEmpty";
 
-import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
-import CardHeader from "@material-ui/core/CardHeader";
-import CardContent from "@material-ui/core/CardContent";
-import Button from "@material-ui/core/Button";
-import Fade from "@material-ui/core/Fade";
+import {
+  Button,
+  Card,
+  CardActions,
+  CardHeader,
+  CardContent,
+  Fade,
+  TextField
+} from "@material-ui/core/";
+import { Flex } from "grid-styled/emotion";
+
+import { isRequired, isEmail } from "utils/validation";
 
 const LoginContainer = styled.div`
   margin: 20vh auto;
@@ -22,28 +28,56 @@ const StyledCard = styled(Card)`
 `;
 
 const StyledContent = styled(CardContent)`
-  padding: 16px 12px;
+  padding: 18px;
 `;
 
-const StyledInput = styled.input`
-  font-size: 12px;
-  height: 20px;
-  padding: 4px;
-  width: 92%;
-
+const StyledInput = styled(TextField)`
   &:not(first-child) {
     margin-top: 8px;
   }
 `;
 
+const StyledHeader = styled(CardHeader)`
+  text-align: center;
+`;
+
 export default class Login extends PureComponent {
   state = {
-    signedIn: false,
-    user: {
-      first_name: null,
-      last_name: null,
-      email: null,
-      password: null
+    user: {},
+    form: {
+      email: { value: "", touched: false, error: false },
+      first_name: { value: "", touched: false, error: false },
+      last_name: { value: "", touched: false, error: false },
+      password: { value: "", touched: false, error: false },
+      phone: { value: "", touched: false, error: false }
+    }
+  };
+
+  signupFields = {
+    first_name: {
+      label: "First Name",
+      error: isRequired,
+      required: true
+    },
+    last_name: {
+      label: "Last Name",
+      error: isRequired,
+      required: true
+    },
+    email: {
+      label: "Email",
+      error: isEmail,
+      required: true
+    },
+    phone: {
+      label: "Phone Number",
+      error: isRequired,
+      required: true
+    },
+    password: {
+      label: "Password",
+      error: isRequired,
+      required: true
     }
   };
 
@@ -52,9 +86,13 @@ export default class Login extends PureComponent {
 
     this.setState(
       update(this.state, {
-        user: {
+        form: {
           [name]: {
-            $set: value
+            $set: {
+              error: !this.signupFields[name].error(value),
+              touched: true,
+              value
+            }
           }
         }
       })
@@ -62,66 +100,99 @@ export default class Login extends PureComponent {
   };
 
   save = async () => {
-    const { user } = this.state;
+    const { form } = this.state;
 
-    const response = await axios({
+    const formValues = Object.entries(form).reduce(
+      (acc, [name, { value }]) => ({ ...acc, [name]: value }),
+      { bu: "instagram" }
+    );
+
+    const {
+      data: { body }
+    } = await axios({
       url:
         "https://qhoovbdv91.execute-api.us-west-2.amazonaws.com/default/registration-auth-api/v1/influencer",
       method: "post",
       headers: { "Content-Type": "application/json" },
-      data: user
+      data: formValues
     });
 
-    console.log(response);
+    this.setState({ user: body });
   };
 
   render() {
+    const { user, form } = this.state;
+
     return (
       <LoginContainer>
-        <Fade in timeout={2000}>
-          <StyledCard raised>
-            {/* <CardHeader title="Login" /> */}
-            <StyledContent>
-              <StyledInput
-                name="first_name"
-                placeholder="First Name"
-                onChange={this.updateUserProperty}
-              />
-              <StyledInput
-                name="last_name"
-                placeholder="Last Name"
-                onChange={this.updateUserProperty}
-              />
-              <StyledInput
-                name="email"
-                placeholder="Email"
-                onChange={this.updateUserProperty}
-              />
-              <StyledInput
-                name="phone"
-                placeholder="Phone Number"
-                onChange={this.updateUserProperty}
-              />
-              <StyledInput
-                name="password"
-                placeholder="Password"
-                onChange={this.updateUserProperty}
-                type="password"
-              />
-            </StyledContent>
-            <CardActions>
-              <Button
-                fullWidth
-                disabled={Object.values(this.state.user).some(isNil)}
-                color="primary"
-                variant="contained"
-                onClick={this.save}
-              >
-                Sign In
-              </Button>
-            </CardActions>
-          </StyledCard>
-        </Fade>
+        {isEmpty(user) && (
+          <Fade in out timeout={2000}>
+            <StyledCard raised>
+              <Fragment>
+                <StyledContent>
+                  <Flex>
+                    {Object.entries(this.signupFields)
+                      .slice(0, 2)
+                      .map(([name, { label, required }], ind) => {
+                        const { error, touched, value } = form[name];
+
+                        return (
+                          <StyledInput
+                            fullWidth
+                            error={touched && error}
+                            key={`${name}-${ind}`}
+                            label={label}
+                            name={name}
+                            onChange={this.updateUserProperty}
+                            placeholder={label}
+                            required={required}
+                            value={value}
+                          />
+                        );
+                      })}
+                  </Flex>
+                  {Object.entries(this.signupFields)
+                    .slice(2)
+                    .map(([name, { label, required }], ind) => {
+                      const { error, touched, value } = form[name];
+
+                      return (
+                        <StyledInput
+                          fullWidth
+                          error={touched && error}
+                          key={`${name}-${ind}`}
+                          label={label}
+                          name={name}
+                          onChange={this.updateUserProperty}
+                          placeholder={label}
+                          required={required}
+                          value={value}
+                        />
+                      );
+                    })}
+                </StyledContent>
+                <CardActions>
+                  <Button
+                    fullWidth
+                    // disabled={Object.values(this.state.form).some(({ value }) =>
+                    //   isEmpty(value)
+                    // )}
+                    color="primary"
+                    variant="contained"
+                    onClick={this.save}
+                  >
+                    Next
+                  </Button>
+                </CardActions>
+              </Fragment>
+            </StyledCard>
+          </Fade>
+        )}
+        {!isEmpty(user) && (
+          <Fade in out timeout={2000}>
+            <StyledHeader title={`Welcome, ${user.first_name}.`} />
+          </Fade>
+        )}
       </LoginContainer>
     );
   }
