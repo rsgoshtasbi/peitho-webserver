@@ -1,8 +1,8 @@
 import React, { PureComponent, Fragment } from "react";
 import styled from "react-emotion";
 import update from "immutability-helper";
-import axios from "axios";
 import isEmpty from "lodash/isEmpty";
+import axios from "api";
 
 import {
   Button,
@@ -110,10 +110,10 @@ export default class Login extends PureComponent {
     const {
       data: { body }
     } = await axios({
-      url:
-        "https://qhoovbdv91.execute-api.us-west-2.amazonaws.com/default/registration-auth-api/v1/influencer",
+      // url:
+      //   "https://qhoovbdv91.execute-api.us-west-2.amazonaws.com/default/registration-auth-api/v1/influencer",
+      url: "/graphql",
       method: "post",
-      headers: { "Content-Type": "application/json" },
       data: formValues
     });
 
@@ -126,7 +126,7 @@ export default class Login extends PureComponent {
     return (
       <LoginContainer>
         {isEmpty(user) && (
-          <Fade in out timeout={2000}>
+          <Fade in out="true" timeout={2000}>
             <StyledCard raised>
               <Fragment>
                 <StyledContent>
@@ -174,9 +174,9 @@ export default class Login extends PureComponent {
                 <CardActions>
                   <Button
                     fullWidth
-                    // disabled={Object.values(this.state.form).some(({ value }) =>
-                    //   isEmpty(value)
-                    // )}
+                    disabled={Object.values(this.state.form).some(
+                      ({ error, touched }) => !touched || error
+                    )}
                     color="primary"
                     variant="contained"
                     onClick={this.save}
@@ -189,7 +189,7 @@ export default class Login extends PureComponent {
           </Fade>
         )}
         {!isEmpty(user) && (
-          <Fade in out timeout={2000}>
+          <Fade in="true" timeout={2000}>
             <StyledHeader title={`Welcome, ${user.first_name}.`} />
           </Fade>
         )}

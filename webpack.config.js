@@ -9,6 +9,7 @@ module.exports = {
   },
   resolve: {
     alias: {
+      api: path.resolve(__dirname, "client/api"),
       components: path.resolve(__dirname, "client/components"),
       pages: path.resolve(__dirname, "client/pages"),
       state: path.resolve(__dirname, "client/state"),
